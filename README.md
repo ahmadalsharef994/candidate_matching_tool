@@ -111,11 +111,6 @@ This system matches and ranks job candidates against job descriptions using thre
 
 ## Installation and Setup
 
-### Prerequisites
-
-- Python 3.8+
-- NLTK data
-- Tika Parser
 
 ### Install Dependencies
 
@@ -194,11 +189,6 @@ This will:
 2. Process and move them to the `data/processed/cvs` folder
 3. Remove processed files from raw folder
 
-## Testing
-
-```bash
-pytest
-```
 
 ## License
 
