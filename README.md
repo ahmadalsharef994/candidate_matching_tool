@@ -6,8 +6,7 @@ A simple resume matching and ranking tool that compares job candidates against j
 
 This system matches and ranks job candidates against job descriptions using three text similarity techniques: cosine similarity, square root cosine similarity, and Improved Similarity Coefficient (ISC). It provides a straightforward web interface for uploading job descriptions, and displays the top 20 candidates ranked by similarity scores.
 
-
-A scalable web-based tool for screening and ranking job candidates against job descriptions using text similarity techniques. Built to process large candidate pools (20k–30k resumes) and return top-ranked profiles.
+ Built to process large candidate pools (20k–30k resumes) in seconds and return top-ranked profiles.
 
 ## Key Features
 
@@ -33,22 +32,82 @@ A scalable web-based tool for screening and ranking job candidates against job d
 
 ## Architecture
 
-### Components
+## 🧩 System Components & Technology stack
 
-- **Web Interface**: Flask web application
-- **PDF Parsing**: pdftotext with Tika parser fallback
-- **Text Processing**: NLTK for tokenization, stemming, and redundancy removal
-- **Similarity Engine**: Scikit-learn with custom algorithms
-- **Data Handling**: Pandas for results processing
+| Component             | Description                                                                 |
+|-----------------------|-----------------------------------------------------------------------------|
+| Web Interface         | Flask-based web application                                                 |
+| PDF Parsing           | pdftotext for primary parsing, with Apache Tika as fallback               |
+| Text Processing       | NLTK for tokenization, stemming, and redundancy removal                     |
+| Similarity Engine     | Cosine Similarity (Scikit-learn), SqrtCos & ISC (custom algorithms)         |
+| Vectorization         | TF-IDF (Scikit-learn), with logic to penalize overly long profiles          |
+| Data Handling         | Pandas for result processing, PyMongo for optional data storage             |
+| Automation            | Weekly CRON jobs for CV preprocessing from S3 or local sources              |
+| Deployment            | Hosted on DigitalOcean                                                      |
+| Secrets Management    | AWS (S3) and MongoDB credentials                                             |
+| Planned Upgrades      | FAISS for semantic similarity; Docker for containerized deployment          |
 
-### Workflow
 
-1. **Raw Data Processing**: CRON job processes raw CVs into processed format weekly
-2. **Job Description Input**: Upload a job description (PDF) or paste text
-3. **Candidate Selection**: System automatically selects CVs from processed folder
-4. **Similarity Analysis**: Each CV compared to the job description using all three similarity algorithms
-5. **Results Display**: Top 20 candidates ranked based on similarity scores with performance metrics
-6. **Export Results**: Download matches as CSV
+## 🔄 Job-CV Matching Workflow
+
+1. **Raw Data Processing (Weekly CRON Job)**
+   - CVs (from S3 or local storage) are processed into a standardized format
+   - Processed CVs are saved in a dedicated folder (processed/)
+
+2. **Job Description Input**
+   - Users upload a job description as a PDF or paste text directly into the system
+
+3. **Candidate Selection**
+   - The system automatically selects and loads CVs from the processed folder
+
+4. **Similarity Analysis**
+   - Each CV is compared to the job description using three similarity algorithms:
+     - **Cosine Similarity** (via scikit-learn)
+     - **SqrtCos Similarity** (custom)
+     - **ISC Similarity** (custom)
+
+5. **Results Display**
+   - Top 20 candidates are ranked based on aggregated similarity scores
+   - Performance metrics and comparison across all three algorithms are shown
+
+6. **Export Results**
+   - Users can export the ranked candidate list and scores as a CSV file
+
+
+## Metrics
+📊
+| Type | Examples |
+|------|----------|
+| Model Metrics | Cosine score, custom similarity |
+| Software Metrics | Latency, throughput |
+| Business Impact | Reduced screening time, improved matching quality, recruiter trust |
+
+## Data & Ethics
+📂 
+- **Data Sources**: Scraping, uploads, open-source test sets, collective data
+- **Privacy**: No private data input to AI; only metadata (link to profile) stored
+- **Labeling & Validation**: Human feedback, blind testing (recruiter vs model scores)
+- **Ethical Checks**: Monitored for bias, removed deleted profiles following GDPR
+- **Interoperability**: Modular components with ETL-style architecture
+
+## Architecture Principles
+🔧 
+- Unified data structure with reduced dimensionality (via feature selection)
+- Preprocessing prioritized over post-model interpretation
+- Emphasis on ETL over ELT
+- Dynamic shifting enabled through modular orchestration
+
+## Timeline
+🧪
+- Development Completed in: 1 week
+
+## Planned Improvements
+📈
+- Use FAISS for vector storage (better scalability)
+- Full Dockerization for reproducibility and deployment
+- CI/CD integration for automatic update checks
+- F1-score
+
 
 ## Installation and Setup
 
@@ -152,69 +211,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Tika and pdftotext libraries for PDF parsing
 
 
-
-## Tools & Technologies 
-🛠
-| Component | Tools Used |
-|-----------|------------|
-| Web Backend | Flask |
-| PDF Parsing | Pdf2Text |
-| Text Processing | NLTK (manual tokenization, stemming, redundancy removal) |
-| Similarity Engine | Scikit-learn (Cosine), Custom Algorithms (SqrtCos, ISC) |
-| Vectorization | Scikit-learn TF-IDF (penalizes overlong profiles) |
-| Data Handling | Pandas, PyMongo |
-| Automation | CRON jobs for S3 polling |
-| Planned Upgrades | FAISS for embeddings, Dockerization |
-| Deployment | DigitalOcean |
-| Secrets | AWS (S3), MongoDB credentials |
-
-## Workflow
-🔄
-1. **Job Description Input**
-   - Users upload job description (or paste in text field)
-   
-2. **Text Preprocessing**
-   - Using cron jobs (weekly) the raw data from S3 (or local storage) will be processed and stored in processed folder (S3 or local storage)
-   
-3. **Similarity Analysis**
-   - Job description compared to each candidate using 3 similarity algorithms:
-     - Cosine Similarity (scikit-learn)
-     - SqrtCos Similarity (custom)
-     - ISC Similarity (custom)
-   
-4. **Results Display**
-   - Ranked candidates shown based on similarity score
-
-## Metrics
-📊
-| Type | Examples |
-|------|----------|
-| Model Metrics | Cosine score, custom similarity |
-| Software Metrics | Latency, throughput |
-| Business Impact | Reduced screening time, improved matching quality, recruiter trust |
-
-## Data & Ethics
-📂 
-- **Data Sources**: Scraping, uploads, open-source test sets, collective data
-- **Privacy**: No private data input to AI; only metadata (link to profile) stored
-- **Labeling & Validation**: Human feedback, blind testing (recruiter vs model scores)
-- **Ethical Checks**: Monitored for bias, removed deleted profiles following GDPR
-- **Interoperability**: Modular components with ETL-style architecture
-
-## Architecture Principles
-🔧 
-- Unified data structure with reduced dimensionality (via feature selection)
-- Preprocessing prioritized over post-model interpretation
-- Emphasis on ETL over ELT
-- Dynamic shifting enabled through modular orchestration
-
-## Timeline
-🧪
-- Development Completed in: 1 week
-
-## Planned Improvements
-📈
-- Use FAISS for vector storage (better scalability)
-- Full Dockerization for reproducibility and deployment
-- CI/CD integration for automatic update checks
-- F1-score
