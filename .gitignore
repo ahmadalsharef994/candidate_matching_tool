@@ -1,0 +1,42 @@
+# Python virtual environment
+venv/
+env/
+.venv/
+.env
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+
+# Data directories
+CVs/
+data/raw/
+data/processed/
+*.pdf
+*.csv
+*.docx
+*.doc
+*.txt
+job_description.pdf
+
+# Log files
+logs/
+*.log
+
+# Environment variables
+.env
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
