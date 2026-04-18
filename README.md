@@ -2,13 +2,14 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11+-blue?logo=python" alt="Python">
-  <img src="https://img.shields.io/badge/NLP-sentence--transformers-orange" alt="NLP">
-  <img src="https://img.shields.io/badge/FastAPI-REST%20API-green?logo=fastapi" alt="FastAPI">
-  <img src="https://img.shields.io/badge/cosine--similarity-matching-purple" alt="Matching">
+  <img src="https://img.shields.io/badge/Flask-web%20UI-lightgrey?logo=flask" alt="Flask">
+  <img src="https://img.shields.io/badge/TF--IDF-cosine%20similarity-purple" alt="Matching">
+  <img src="https://img.shields.io/badge/docker-ready-blue?logo=docker" alt="Docker">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
+  <img src="https://github.com/ahmadalsharef994/candidate-matching-tool/actions/workflows/ci.yml/badge.svg" alt="CI">
 </p>
 
-An **AI-powered candidate-to-job matching tool** that uses sentence transformers and cosine similarity to rank candidates against job descriptions. Removes keyword-matching bias and understands semantic relevance.
+An **AI-powered candidate-to-job matching tool** that ranks PDF resumes against a job description using TF-IDF cosine similarity and custom scoring. Has a Flask web UI and a standalone CLI script.
 
 ---
 
@@ -16,12 +17,12 @@ An **AI-powered candidate-to-job matching tool** that uses sentence transformers
 
 ```mermaid
 flowchart LR
-    JD["📋 Job Description"] --> Encoder["🤖 Sentence\nTransformer\n(all-MiniLM-L6-v2)"]
-    Resume["📄 Candidate\nResume"] --> Encoder
-    Encoder --> JD_Embed["JD Embedding\n(384-dim)"]
-    Encoder --> CV_Embed["CV Embedding\n(384-dim)"]
-    JD_Embed --> Cosine["📐 Cosine\nSimilarity"]
-    CV_Embed --> Cosine
+    JD["📋 Job Description"] --> TFIDF["🤖 TF-IDF\nVectorizer"]
+    CVs["📄 PDF Resumes\n(pdftotext / PyMuPDF)"] --> TFIDF
+    TFIDF --> JD_Vec["JD Vector"]
+    TFIDF --> CV_Vecs["CV Vectors"]
+    JD_Vec --> Cosine["📐 Cosine\nSimilarity"]
+    CV_Vecs --> Cosine
     Cosine --> Score["🏆 Match Score\n(0 → 1)"]
     Score --> Ranked["📊 Ranked\nCandidates"]
 ```
@@ -31,42 +32,45 @@ flowchart LR
 ## 🚀 Quick Start
 
 ```bash
+git clone https://github.com/ahmadalsharef994/candidate-matching-tool.git
+cd candidate-matching-tool
+cp .env.example .env
+
+# Docker (recommended — no setup needed)
+docker compose up --build
+# → http://localhost:5000
+
+# Or locally
 pip install -r requirements.txt
-uvicorn app:app --reload
+python -m flask --app app/main.py run
 ```
 
-### Match via API
-
-```bash
-curl -X POST http://localhost:8000/match \
-  -H "Content-Type: application/json" \
-  -d '{
-    "job_description": "Senior Python backend engineer...",
-    "candidates": [
-      {"id": "c1", "resume": "5 years Python, FastAPI, PostgreSQL..."},
-      {"id": "c2", "resume": "React developer with 3 years experience..."}
-    ]
-  }'
-```
-
-**Response:**
-```json
-{
-  "ranked": [
-    {"id": "c1", "score": 0.89, "rank": 1},
-    {"id": "c2", "score": 0.41, "rank": 2}
-  ]
-}
-```
+Drop PDF resumes into `CVs/` (see `CVs/README.md`), paste your job description into the UI, and click **Match**.
 
 ---
 
-## 📊 Features
+## 📊 Sample Output
 
-- Semantic matching (not just keyword overlap)
-- Batch scoring of multiple candidates
-- Configurable similarity threshold
-- CSV bulk import/export
+Given a job description for a *Senior Python Backend Engineer*, the tool ranks candidates:
+
+| Rank | Candidate      | Score | Top Keywords                              |
+|------|----------------|-------|-------------------------------------------|
+| 1    | john_doe.pdf   | 0.87  | python, fastapi, backend, api, postgresql |
+| 2    | jane_smith.pdf | 0.71  | machine learning, sql, scikit-learn       |
+| 3    | bob_jones.pdf  | 0.54  | javascript, react, node.js                |
+| 4    | alice_wang.pdf | 0.38  | java, spring, microservices               |
+
+Scores are cosine similarity between TF-IDF vectors of the job description and each resume. A score above **0.70** is a strong match.
+
+---
+
+## 📋 Features
+
+- PDF parsing via `pdftotext` and `PyMuPDF` (handles scanned PDFs)
+- TF-IDF vectorization with stop-word filtering and stemming
+- Multiple similarity algorithms: cosine, ISC, sqrt-cosine
+- Flask web UI with drag-and-drop upload
+- Standalone CLI: `match_resumes.py`
 
 ---
 
